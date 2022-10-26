@@ -83,7 +83,7 @@ byte DS3231::readData(byte reg)
     return val;
 }
 
-void getlocalTime()
+void DS3231::getlocalTime_setDS3231()
 {
     struct tm *tm_now = {};
     int seconds_now   = 0;
@@ -94,11 +94,53 @@ void getlocalTime()
     //seconds_now = tm_now->tm_hour * 3600 + tm_now->tm_min * 60 + tm_now->tm_sec;
 
     printf ( "Current date and time are: %s \n", asctime (tm_now) );
-
+/*
     int year  = tm_now->tm_year;
     int month = tm_now->tm_mon;
     int day   = tm_now->tm_mday;
     int hour  = tm_now->tm_hour;
     int min   = tm_now->tm_min;
     int sec   = tm_now->tm_sec;
+*/
+
+    writeData(REG_SEC, tm_now->tm_sec);
+    writeData(REG_MIN, tm_now->tm_min);
+    writeData(REG_HOUR, tm_now->tm_hour);
+    writeData(REG_DAY, tm_now->tm_mday);
+    writeData(REG_MONTH, tm_now->tm_mon);
+    writeData(REG_YEAR, tm_now->tm_year);
+}
+
+byte DS3231::getSecond()
+{
+    byte secReg   = readData(REG_SEC);
+    byte lowSec = secReg & 0x0f;
+    byte highSec = (secReg & 0xf0) >> 4;
+    byte sec = 10 * highSec + lowSec;  
+
+    return sec;
+}
+
+void DS3231::getDS3231_setLocalTime()
+{
+    
+    
+    byte min   = readData(REG_MIN);
+    //min = min & REG_MASK;
+    byte hour  = readData(REG_HOUR);
+    //hour = hour & REG_MASK;
+    byte day   = readData(REG_DAY);
+    //day = day & REG_MASK;
+    byte month = readData(REG_MONTH);
+    //month = month & REG_MASK;
+    byte year  = readData(REG_YEAR);
+    //year = year & REG_MASK;
+
+    printf("sec::%d\n", getSecond());
+    printf("min::%d\n", min);
+    printf("hour::%d\n", hour);
+    printf("day::%d\n", day);
+    printf("month::%d\n", month);
+    printf("year::%d\n", year);
+       
 }

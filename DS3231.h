@@ -56,6 +56,7 @@ class DS3231
 
     int _devI2C;
     bool _open;
+    
 };
 
 

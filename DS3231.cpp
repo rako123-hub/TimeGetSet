@@ -10,7 +10,6 @@ DS3231::DS3231()
     {
         setDevAdr(0x68);
     }
-
 }
 
 DS3231::~DS3231()
@@ -207,20 +206,10 @@ void DS3231::getDS3231_setLocalTime()
     printf("month::%d\n", month);
     printf("year::%d\n", year);
 
-/*
-    struct tm tm_now = {};
-    tm_now.tm_year = year + 2000 - 1900;
-    tm_now.tm_mon  = month - 1;
-    tm_now.tm_mday = day +1;
-    tm_now.tm_hour = hour +1;
-    tm_now.tm_min  = min +1;
-    tm_now.tm_sec  = sec +1;
-*/
-
     //buffer to format command
 	unsigned char buff[37]={0};
 	//formatting command with the given parameters
-	sprintf((char*)buff,(const char *)"sudo date -s \"%02d/%02d/%04d %02d:%02d:%02d\"",month+1,day+1,year+2001,hour+1,min+1,sec+1);
+	sprintf((char*)buff,(const char *)"sudo date -s \"%02d/%02d/%04d %02d:%02d:%02d\"",month,day,year+2000,hour,min,sec);
 	//execute formatted command using system()
 	system((const char *)buff);
      

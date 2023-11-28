@@ -44,8 +44,15 @@ class DS3231
     bool writeData(byte reg, byte value);
     byte readData(byte reg);
     void getlocalTime();
-    byte getSecond();
 
+    byte getSecond();
+    byte getMinute();
+    byte getHour();
+    byte getDay();
+    byte getMonth();
+    byte getYear();
+
+    void setClock(byte reg, byte val);
 
     int _devI2C;
     bool _open;

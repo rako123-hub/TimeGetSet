@@ -16,6 +16,8 @@ int main(int argc, char *argv[])
    printf("Program Name Is: %s",argv[0]);
 
    DS3231 *ds3231 = new DS3231();
+   ds3231->getlocalTime_setDS3231();
+   ds3231->getDS3231_setLocalTime();
 
    int counter = 0;
    if(argc ==1 ) printf("\nNo Extra Command Line Argument Passed Other Than Program Name");

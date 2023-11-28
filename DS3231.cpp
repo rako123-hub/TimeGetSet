@@ -86,7 +86,6 @@ byte DS3231::readData(byte reg)
 void DS3231::getlocalTime_setDS3231()
 {
     struct tm *tm_now = {};
-    int seconds_now   = 0;
 
     auto now = std::chrono::system_clock::now();
     std::time_t time_now = std::chrono::system_clock::to_time_t(now); 
@@ -95,52 +94,134 @@ void DS3231::getlocalTime_setDS3231()
 
     printf ( "Current date and time are: %s \n", asctime (tm_now) );
 /*
-    int year  = tm_now->tm_year;
-    int month = tm_now->tm_mon;
+m_sec	int	seconds after the minute	0-61*
+tm_min	int	minutes after the hour	0-59
+tm_hour	int	hours since midnight	0-23
+tm_mday	int	day of the month	1-31
+tm_mon	int	months since January	0-11
+tm_year	int	years since 1900	
+tm_wday	int	days since Sunday	0-6
+tm_yday	int	days since January 1	0-365
+tm_isdst	int	Daylight Saving Time flag	
+*/
+    int year  = tm_now->tm_year + 1900 - 2000;
+    int month = tm_now->tm_mon + 1 ;
     int day   = tm_now->tm_mday;
     int hour  = tm_now->tm_hour;
     int min   = tm_now->tm_min;
     int sec   = tm_now->tm_sec;
-*/
 
-    writeData(REG_SEC, tm_now->tm_sec);
-    writeData(REG_MIN, tm_now->tm_min);
-    writeData(REG_HOUR, tm_now->tm_hour);
-    writeData(REG_DAY, tm_now->tm_mday);
-    writeData(REG_MONTH, tm_now->tm_mon);
-    writeData(REG_YEAR, tm_now->tm_year);
+    printf("setYear0::%d\n", year);
+    printf("setMonth0::%d\n", month);
+    printf("setday0::%d\n", day);
+    printf("sethour0::%d\n", hour);
+    printf("setmin0::%d\n", min);
+    printf("setsec0::%d\n", sec);
+    printf("\n -------------------\n");
+    setClock(REG_YEAR, year);
+    setClock(REG_MONTH, month);
+    setClock(REG_DAY, day);
+    setClock(REG_HOUR, hour);
+    setClock(REG_MIN, min);
+    setClock(REG_SEC, sec);
+}
+
+void DS3231::setClock(byte reg, byte val)
+{
+    byte highVal = val / 10;
+    byte lowVal  = val - (highVal * 10);
+    byte calcVal = (highVal << 4) | lowVal;
+    writeData(reg, calcVal);
+
 }
 
 byte DS3231::getSecond()
 {
-    byte secReg   = readData(REG_SEC);
-    byte lowSec = secReg & 0x0f;
+    byte secReg  = readData(REG_SEC);
+    byte lowSec  = secReg & 0x0f;
     byte highSec = (secReg & 0xf0) >> 4;
-    byte sec = 10 * highSec + lowSec;  
-
+    byte sec     = 10 * highSec + lowSec;  
     return sec;
 }
 
+byte DS3231::getMinute()
+{
+    byte minReg  = readData(REG_MIN);
+    byte lowMin  = minReg & 0x0f;
+    byte highMin = (minReg & 0xf0) >> 4;
+    byte min     = 10 * highMin + lowMin;  
+    return min;
+}
+
+byte DS3231::getHour()
+{
+    byte hourReg  = readData(REG_HOUR);
+    byte lowHour  = hourReg & 0x0f;
+    byte highHour = (hourReg & 0x30) >> 4;
+    byte hour     = 10 * highHour + lowHour;  
+    return hour;
+}
+
+byte DS3231::getDay()
+{
+    byte dayReg  = readData(REG_DAY);
+    byte lowDay  = dayReg & 0x0f;
+    byte highDay = (dayReg & 0x30) >> 4;
+    byte day     = 10 * highDay + lowDay;  
+    return day;
+}
+
+byte DS3231::getMonth()
+{
+    byte monthReg  = readData(REG_MONTH);
+    byte lowMonth  = monthReg & 0x0f;
+    byte highMonth = (monthReg & 0x10) >> 4;
+    byte month     = 10 * highMonth + lowMonth;  
+    return month;
+}
+
+byte DS3231::getYear()
+{
+    byte yearReg  = readData(REG_YEAR);
+    byte lowYear  = yearReg & 0x0f;
+    byte highYear = (yearReg & 0xf0) >> 4;
+    byte year     = 10 * highYear + lowYear;  
+    return year;
+}
+
+
+
 void DS3231::getDS3231_setLocalTime()
 {
-    
-    
-    byte min   = readData(REG_MIN);
-    //min = min & REG_MASK;
-    byte hour  = readData(REG_HOUR);
-    //hour = hour & REG_MASK;
-    byte day   = readData(REG_DAY);
-    //day = day & REG_MASK;
-    byte month = readData(REG_MONTH);
-    //month = month & REG_MASK;
-    byte year  = readData(REG_YEAR);
-    //year = year & REG_MASK;
+    byte sec   = getSecond();  
+    byte min   = getMinute();
+    byte hour  = getHour();
+    byte day   = getDay();
+    byte month = getMonth();
+    byte year  = getYear();
 
-    printf("sec::%d\n", getSecond());
+    printf("sec::%d\n", sec);
     printf("min::%d\n", min);
     printf("hour::%d\n", hour);
     printf("day::%d\n", day);
     printf("month::%d\n", month);
     printf("year::%d\n", year);
-       
+
+/*
+    struct tm tm_now = {};
+    tm_now.tm_year = year + 2000 - 1900;
+    tm_now.tm_mon  = month - 1;
+    tm_now.tm_mday = day +1;
+    tm_now.tm_hour = hour +1;
+    tm_now.tm_min  = min +1;
+    tm_now.tm_sec  = sec +1;
+*/
+
+    //buffer to format command
+	unsigned char buff[37]={0};
+	//formatting command with the given parameters
+	sprintf((char*)buff,(const char *)"sudo date -s \"%02d/%02d/%04d %02d:%02d:%02d\"",month+1,day+1,year+2001,hour+1,min+1,sec+1);
+	//execute formatted command using system()
+	system((const char *)buff);
+     
 }
